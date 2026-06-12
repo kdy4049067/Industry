@@ -10,6 +10,11 @@ import ShareButton from '@/components/ShareButton';
 import { getDisplayRole } from '@/lib/getDisplayRole';
 import CommentSection from './CommentSection';
 
+const postSelect =
+  '*, profiles(nickname, email, public_id, user_role, industry, manager_type)';
+const commentsSelect =
+  '*, profiles(nickname, email, public_id, user_role, manager_type)';
+
 export default async function PostDetailPage({
   params,
 }: {
@@ -22,24 +27,28 @@ export default async function PostDetailPage({
 
   const supabase = await createClient();
 
-  await supabase.rpc('increment_view_count', { post_id_input: postId });
+  const { error: viewCountError } = await supabase.rpc('increment_view_count', {
+    post_id_input: postId,
+  });
+
+  if (viewCountError) {
+    console.error('[post] increment_view_count failed:', viewCountError);
+  }
 
   const [
-    { data: post },
-    { data: comments },
-    { data: attachments },
+    postResult,
+    commentsResult,
+    attachmentsResult,
     { data: userData },
   ] = await Promise.all([
     supabase
       .from('posts')
-      .select(
-        '*, profiles(nickname, email, public_id, user_code, user_role, industry, job_role, manager_type)'
-      )
+      .select(postSelect)
       .eq('id', postId)
       .single(),
     supabase
       .from('comments')
-      .select('*, profiles(nickname, email, public_id, user_code, user_role, job_role, manager_type)')
+      .select(commentsSelect)
       .eq('post_id', postId)
       .order('created_at', { ascending: true }),
     supabase
@@ -49,6 +58,34 @@ export default async function PostDetailPage({
       .order('created_at', { ascending: true }),
     supabase.auth.getUser(),
   ]);
+
+  if (postResult.error) {
+    console.error('[post] post query failed:', postResult.error);
+  }
+
+  if (commentsResult.error) {
+    console.error('[post] comments query failed:', commentsResult.error);
+  }
+
+  if (attachmentsResult.error) {
+    console.error('[post] attachments query failed:', attachmentsResult.error);
+  }
+
+  const post = postResult.data;
+
+  if (postResult.error && !post) {
+    return (
+      <div className="rounded-2xl bg-white p-8 shadow">
+        <h1 className="text-2xl font-bold text-gray-900">
+          게시글을 불러오지 못했습니다.
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-gray-600">
+          운영 DB 스키마가 현재 배포 코드보다 오래되어 상세 조회에 실패했습니다.
+          Supabase 보강 SQL을 적용한 뒤 다시 확인해 주세요.
+        </p>
+      </div>
+    );
+  }
 
   if (!post) notFound();
 
@@ -61,8 +98,8 @@ export default async function PostDetailPage({
     : { data: null };
 
   const typedPost = post as PostWithAuthor;
-  const typedComments = (comments ?? []) as CommentWithAuthor[];
-  const typedAttachments = (attachments ?? []) as PostAttachment[];
+  const typedComments = (commentsResult.data ?? []) as CommentWithAuthor[];
+  const typedAttachments = (attachmentsResult.data ?? []) as PostAttachment[];
   // 운영진 판별은 is_admin 단독. user_role='관리자' 는 회원가입에서 누구나
   // 선택하는 직무값이므로 운영진 권한과 무관 (appoint_staff.sql 동일 원칙).
   const isAdmin = Boolean(currentProfile?.is_admin);
