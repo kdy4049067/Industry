@@ -2,11 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { countries } from '@/lib/countries';
 import type { Industry, ManagerType, UserRole } from '@/types';
 
 export interface UpdateProfileInput {
   nickname: string;
-  nationality: string | null;
+  nationality_code: string | null;
   age: number | null;
   industry: Industry;
   user_role: UserRole;
@@ -31,11 +32,17 @@ export async function updateProfile(input: UpdateProfileInput) {
 
   const manager_type = input.user_role === '관리자' ? input.manager_type : null;
 
+  const country = input.nationality_code
+    ? countries.find((c) => c.code === input.nationality_code)
+    : null;
+
   const { error } = await supabase
     .from('profiles')
     .update({
       nickname,
-      nationality: input.nationality?.trim() || null,
+      nationality_code: input.nationality_code ?? null,
+      nationality_name: country?.name ?? null,
+      nationality: country?.name ?? null,
       age: input.age ?? null,
       industry: input.industry,
       user_role: input.user_role,

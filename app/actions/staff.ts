@@ -45,6 +45,24 @@ export async function appointStaff(targetUserId: string) {
   return { success: true as const };
 }
 
+/** 게시글 상단 고정/해제. 최고 운영진만 가능. */
+export async function togglePinPost(postId: number, pinned: boolean) {
+  const auth = await requireSuperAdmin();
+  if ('error' in auth) return auth;
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from('posts')
+    .update({ is_pinned: pinned })
+    .eq('id', postId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/board/notice');
+  revalidatePath(`/post/${postId}`);
+  return { success: true as const };
+}
+
 /** 운영진 권한 해임(is_admin=false). 최고 운영진만 가능하며, 최고 운영진은 해임 불가. */
 export async function dismissStaff(targetUserId: string) {
   const auth = await requireSuperAdmin();

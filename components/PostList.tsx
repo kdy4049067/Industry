@@ -35,6 +35,11 @@ export default function PostList({ posts }: { posts: PostListItem[] }) {
           <div className="col-span-1 text-gray-400">{posts.length - index}</div>
 
           <div className="col-span-4 truncate pr-4 font-medium text-gray-800">
+            {post.is_pinned && (
+              <span className="mr-1.5 inline-block rounded bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-700">
+                공지
+              </span>
+            )}
             {post.title}
           </div>
 

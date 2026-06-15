@@ -1,16 +1,21 @@
 'use client';
 
 import { createClient } from '@/lib/supabase/client';
+import { togglePinPost } from '@/app/actions/staff';
 import type { ReportTargetType } from '@/types';
 
 type AdminContentActionsProps = {
   targetType: ReportTargetType;
   targetId: number;
+  isSuperAdmin?: boolean;
+  isPinned?: boolean;
 };
 
 export default function AdminContentActions({
   targetType,
   targetId,
+  isSuperAdmin = false,
+  isPinned = false,
 }: AdminContentActionsProps) {
   const getTableName = () => {
     if (targetType === 'post') return 'posts';
@@ -78,8 +83,30 @@ export default function AdminContentActions({
     location.reload();
   };
 
+  const handleTogglePin = async () => {
+    const result = await togglePinPost(targetId, !isPinned);
+    if ('error' in result && result.error) {
+      alert(result.error);
+      return;
+    }
+    alert(isPinned ? '상단 고정을 해제했습니다.' : '상단에 고정했습니다.');
+    location.reload();
+  };
+
   return (
     <div className="mt-2 flex flex-wrap gap-2">
+      {isSuperAdmin && targetType === 'post' && (
+        <button
+          type="button"
+          onClick={handleTogglePin}
+          className={`rounded px-2 py-1 text-xs font-bold text-white ${
+            isPinned ? 'bg-blue-500' : 'bg-indigo-600'
+          }`}
+        >
+          {isPinned ? '📌 고정 해제' : '📌 상단 고정'}
+        </button>
+      )}
+
       <button
         type="button"
         onClick={hideContent}

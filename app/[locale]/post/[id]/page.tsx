@@ -92,7 +92,7 @@ export default async function PostDetailPage({
   const { data: currentProfile } = userData.user
     ? await supabase
         .from('profiles')
-        .select('is_admin')
+        .select('is_admin, is_super_admin')
         .eq('id', userData.user.id)
         .single()
     : { data: null };
@@ -103,6 +103,7 @@ export default async function PostDetailPage({
   // 운영진 판별은 is_admin 단독. user_role='관리자' 는 회원가입에서 누구나
   // 선택하는 직무값이므로 운영진 권한과 무관 (appoint_staff.sql 동일 원칙).
   const isAdmin = Boolean(currentProfile?.is_admin);
+  const isSuperAdmin = Boolean(currentProfile?.is_super_admin);
   const isQnaPost = typedPost.category_slug === 'qna';
   const postUrl = process.env.NEXT_PUBLIC_SITE_URL
     ? `${process.env.NEXT_PUBLIC_SITE_URL}/post/${typedPost.id}`
@@ -220,7 +221,14 @@ export default async function PostDetailPage({
         </section>
       )}
 
-      {isAdmin && <AdminContentActions targetType="post" targetId={typedPost.id} />}
+      {isAdmin && (
+        <AdminContentActions
+          targetType="post"
+          targetId={typedPost.id}
+          isSuperAdmin={isSuperAdmin}
+          isPinned={typedPost.is_pinned}
+        />
+      )}
 
       {isQnaPost ? (
         <QnaAnswerSection

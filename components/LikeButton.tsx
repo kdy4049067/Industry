@@ -47,19 +47,37 @@ export default function LikeButton({
       return;
     }
 
-    const { data, error } = await supabase.rpc('toggle_post_like', {
-      post_id_input: postId,
-    });
+    if (liked) {
+      const { error } = await supabase
+        .from('likes')
+        .delete()
+        .eq('post_id', postId)
+        .eq('user_id', userData.user.id);
 
-    setLoading(false);
+      if (error) {
+        alert(error.message);
+        setLoading(false);
+        return;
+      }
 
-    if (error) {
-      alert(error.message);
-      return;
+      setCount((c) => Math.max(0, c - 1));
+      setLiked(false);
+    } else {
+      const { error } = await supabase
+        .from('likes')
+        .insert({ post_id: postId, user_id: userData.user.id });
+
+      if (error) {
+        alert(error.message);
+        setLoading(false);
+        return;
+      }
+
+      setCount((c) => c + 1);
+      setLiked(true);
     }
 
-    setCount(data ?? 0);
-    setLiked((value) => !value);
+    setLoading(false);
   };
 
   return (
