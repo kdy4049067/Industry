@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { updateProfile } from '@/app/actions/profile';
+import { countries } from '@/lib/countries';
 import type { Industry, ManagerType, Profile, UserRole } from '@/types';
 
 const MANAGER_TYPES: ManagerType[] = [
@@ -18,13 +19,15 @@ const INDUSTRIES: Industry[] = ['건설업', '제조업', '기타'];
 interface Props {
   profile: Pick<
     Profile,
-    'nickname' | 'nationality' | 'age' | 'industry' | 'user_role' | 'manager_type'
+    'nickname' | 'nationality_code' | 'age' | 'industry' | 'user_role' | 'manager_type'
   >;
 }
 
 export default function MyPageEditForm({ profile }: Props) {
   const [nickname, setNickname] = useState(profile.nickname);
-  const [nationality, setNationality] = useState(profile.nationality ?? '');
+  const [nationalityCode, setNationalityCode] = useState(
+    profile.nationality_code ?? ''
+  );
   const [age, setAge] = useState<string>(
     profile.age !== null ? String(profile.age) : ''
   );
@@ -47,7 +50,7 @@ export default function MyPageEditForm({ profile }: Props) {
 
     const result = await updateProfile({
       nickname,
-      nationality: nationality.trim() || null,
+      nationality_code: nationalityCode || null,
       age: parsedAge,
       industry,
       user_role: userRole,
@@ -75,12 +78,18 @@ export default function MyPageEditForm({ profile }: Props) {
       </Field>
 
       <Field label="국적">
-        <input
-          value={nationality}
-          onChange={(e) => setNationality(e.target.value)}
-          placeholder="한국, 베트남, 태국 등"
+        <select
+          value={nationalityCode}
+          onChange={(e) => setNationalityCode(e.target.value)}
           className={inputClass}
-        />
+        >
+          <option value="">선택하세요</option>
+          {countries.map((country) => (
+            <option key={country.code} value={country.code}>
+              {country.name}
+            </option>
+          ))}
+        </select>
       </Field>
 
       <Field label="나이">

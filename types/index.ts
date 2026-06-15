@@ -100,6 +100,7 @@ export interface Post {
   is_hidden: boolean;
   hidden_reason: string | null;
   hide_author: boolean;
+  is_pinned: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -126,6 +127,7 @@ export interface PostListItem {
   like_count: number;
   comment_count: number;
   hide_author: boolean;
+  is_pinned: boolean;
   profiles: Pick<
     Profile,
     'nickname' | 'email' | 'public_id' | 'user_code' | 'user_role' | 'job_role' | 'manager_type'

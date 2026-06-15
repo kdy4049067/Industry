@@ -48,6 +48,7 @@ function normalizePostListItem(row: Record<string, unknown>): PostListItem {
     ...row,
     comment_count: row.comment_count ?? 0,
     hide_author: row.hide_author ?? false,
+    is_pinned: row.is_pinned ?? false,
     profiles: profile,
   } as PostListItem;
 }
@@ -88,6 +89,9 @@ export default async function BoardPage({
   if (activeSub) {
     query = query.eq('news_subcategory', activeSub);
   }
+
+  // 고정 게시글을 항상 최상단에 표시
+  query = query.order('is_pinned', { ascending: false });
 
   if (selectedSort === 'oldest') {
     query = query.order('created_at', { ascending: true });

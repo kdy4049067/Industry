@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { findEmailByProfile } from '@/app/actions/auth';
+import { countries } from '@/lib/countries';
 
 export default function FindEmailPage() {
   const t = useTranslations('auth');
@@ -61,13 +62,21 @@ export default function FindEmailPage() {
             <label className="mb-1 block text-sm font-medium text-gray-700">
               {tCommon('nationality')}
             </label>
-            <input
+            <select
               name="nationality"
-              type="text"
               required
-              placeholder={tCommon('nationalityPlaceholder')}
+              defaultValue=""
               className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-blue-500 focus:outline-none"
-            />
+            >
+              <option value="" disabled>
+                선택하세요
+              </option>
+              {countries.map((country) => (
+                <option key={country.code} value={country.name}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
