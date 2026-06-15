@@ -19,14 +19,14 @@ const INDUSTRIES: Industry[] = ['건설업', '제조업', '기타'];
 interface Props {
   profile: Pick<
     Profile,
-    'nickname' | 'nationality_code' | 'age' | 'industry' | 'user_role' | 'manager_type'
+    'nickname' | 'nationality' | 'age' | 'industry' | 'user_role' | 'manager_type'
   >;
 }
 
 export default function MyPageEditForm({ profile }: Props) {
   const [nickname, setNickname] = useState(profile.nickname);
   const [nationalityCode, setNationalityCode] = useState(
-    profile.nationality_code ?? ''
+    countries.find((c) => c.name === profile.nationality)?.code ?? ''
   );
   const [age, setAge] = useState<string>(
     profile.age !== null ? String(profile.age) : ''

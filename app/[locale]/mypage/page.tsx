@@ -23,7 +23,7 @@ export default async function MyPage() {
   const { data: profile, error } = await supabase
     .from('profiles')
     .select(
-      'id, email, nickname, nationality, nationality_code, age, user_role, industry, manager_type, public_id, account_status, report_count, suspended_until, is_admin, created_at'
+      'id, email, nickname, nationality, age, user_role, industry, manager_type, public_id, account_status, report_count, suspended_until, is_admin, created_at'
     )
     .eq('id', user.id)
     .single();
