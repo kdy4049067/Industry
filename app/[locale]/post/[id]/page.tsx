@@ -59,6 +59,16 @@ export default async function PostDetailPage({
     supabase.auth.getUser(),
   ]);
 
+  const { data: likeRow } = userData.user
+    ? await supabase
+        .from('likes')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', userData.user.id)
+        .maybeSingle()
+    : { data: null };
+  const initialLiked = Boolean(likeRow);
+
   if (postResult.error) {
     console.error('[post] post query failed:', postResult.error);
   }
@@ -154,7 +164,7 @@ export default async function PostDetailPage({
         )}
 
         <div className="mt-5 flex flex-wrap gap-2">
-          <LikeButton postId={typedPost.id} initialCount={typedPost.like_count ?? 0} />
+          <LikeButton postId={typedPost.id} initialCount={typedPost.like_count ?? 0} initialLiked={initialLiked} />
           <ShareButton title={typedPost.title} url={postUrl} />
         </div>
       </div>
